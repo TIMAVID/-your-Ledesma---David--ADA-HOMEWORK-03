@@ -17,19 +17,40 @@ x <- c(1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0,
 y <- c(1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 
         0, 1, 1, 0, 1, 1, 1)
 p0 <-.8
-Z.prop.test <- function(x, p0, y=NULL){
+Z.prop.test <- function(x, p0, y = NULL, alternative = "two.sided", conf.level = .95) #where x is a vector, p0 is the expected porportion, y is a second vector, alternative=("two.sided" for two tailed, "greater" for upper tail, "less" for lower tail), confidence level is .95
+  {
   if ((length(x) * p0 < 5) && (length(x) * ( 1 - p0 ) < 5)) stop("check if normal distribution")
   if (is.null(y)) {
-    print((mean(x) - p0)/sqrt(p0 * (1 - p0)/length(x)))
+    z<- (mean(x) - p0)/sqrt(p0 * (1 - p0)/length(x))
+    ci <- c(mean(x) - qnorm(conf.level + 0.025) * sqrt(mean(x) * (1 - mean(x))/length(x)), 
+            mean(x) + qnorm(conf.level + 0.025) * sqrt(mean(x) * (1 - mean(x))/length(x)))
+  if (alternative <= "two.sided"){
+    p <- (pnorm(z, lower.tail = FALSE) + (1 - pnorm(z, lower.tail = TRUE)))}
+  if (alternative <= "greater"){
+    p <- 1 - pnorm(z, lower.tail = FALSE)} 
+  if (alternative <="less"){
+    p <- pnorm(z, lower.tail = TRUE)} 
+  print(list("z statistic" = z, "confidence interval" = ci, "p value" = p))
   }
   if (!is.null(y)) { 
-    print((mean(y) - mean(x))/
-      sqrt(((sum(x) + sum(y))/(length(x) + length(y)) * 
+    z<- (mean(y) - mean(x))/sqrt(((sum(x) + sum(y))/(length(x) + length(y)) * 
               (1 - (sum(x) + sum(y))/(length(x) + length(y)))) * 
-             (1/length(x) + 1/length(y))))
+             (1/length(x) + 1/length(y)))
+  if (alternative <= "two.sided") {
+      p <- pnorm(z, lower.tail = FALSE) + (1 - pnorm(z, lower.tail = TRUE))
+      }
+  if (alternative <= "greater"){
+      p <- 1 - pnorm(z, lower.tail = FALSE)} 
+  if (alternative <="less"){
+      p <- pnorm(z, lower.tail = TRUE)} 
   }
-
-}
+  m1<-mean(x)
+  m2<-mean(y)
+  se <- sqrt(sd(x) *sd(y)/length(x)+sd(y)*sd(y)/length(y))
+  error <- qnorm(0.975)*se
+  ci <- c((m2-m1)+error, (m2-m1)-error)
+  print(list("z statistic" = z, "confidence interval" = ci, "p value" = p))
+  }
 
 Z.prop.test(x, p0, y)
 ```

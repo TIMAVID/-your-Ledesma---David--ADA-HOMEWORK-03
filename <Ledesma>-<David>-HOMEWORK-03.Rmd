@@ -1,1 +1,35 @@
+---
+title: "<Ledesma>-<David>-HOMEWORK-03"
+author: "David Ledesma"
+date: "3/20/2019"
+output: html_document
+---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+x <- c(1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 
+        1, 0)
+
+y <- c(1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 
+        0, 1, 1, 0, 1, 1, 1)
+p0 <-.8
+Z.prop.test <- function(x, p0, y=NULL){
+  if ((length(x) * p0 < 5) && (length(x) * ( 1 - p0 ) < 5)) stop("check if normal distribution")
+  if (is.null(y)) {
+    print((mean(x) - p0)/sqrt(p0 * (1 - p0)/length(x)))
+  }
+  if (!is.null(y)) { 
+    print((mean(y) - mean(x))/
+      sqrt(((sum(x) + sum(y))/(length(x) + length(y)) * 
+              (1 - (sum(x) + sum(y))/(length(x) + length(y)))) * 
+             (1/length(x) + 1/length(y))))
+  }
+
+}
+
+Z.prop.test(x, p0, y)
+```

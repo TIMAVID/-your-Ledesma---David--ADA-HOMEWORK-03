@@ -156,7 +156,6 @@ pi <- predict(regmod, newdata = data.frame(Brain_Size_Species_Mean = d$Brain_Siz
 df <- cbind(df, pi)
 g <- g + geom_line(data = df, aes(x = brain_size, y = lwr), colour = "red")
 g <- g + geom_line(data = df, aes(x = brain_size, y = upr), colour = "red")
-g + geom_text("Blue= CI, Red = Prediction interval")
 g +
   annotate("text", x=100, y=800, label= "Blue=CI, Red=Prediction interval") 
 #log

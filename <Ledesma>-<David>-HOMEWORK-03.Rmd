@@ -79,10 +79,27 @@ g <- g + geom_point()
 g <- g + geom_smooth(method = "lm", formula = y ~ x)
 g
 
+#log
+loglong<- log(longevity)
+logbrain<- log(brain_size)
+logregmod<-lm(loglong ~ logbrain)
+logregmod
+head(logregmod$model)
+
+library(ggplot2)
+g2 <- ggplot(data = d, aes(x = log(brain_size), y = log(longevity)))
+g2 <- g2 + geom_point()
+g2 <- g2 + geom_smooth(method = "lm", formula = y ~ x)
+g2
 ```
+
 ##Beta1
 ```{r}
 beta1 <- cov(brain_size, longevity)/var(brain_size)
+beta1
+
+#log
+beta1 <- cov(logbrain, loglong)/var(logbrain)
 beta1
 ```
 ##CI
@@ -101,6 +118,21 @@ t$CI <- cbind(lowerCI, upperCI)
 dimnames(t$CI)[[1]] <- c("(Intercept)", "brain_size")
 dimnames(t$CI)[[2]] <- c("(5 %)", "(95 %)")
 t[ ,5:6]
+
+#log
+summary(logregmod)
+s <- coef(summary(logregmod))
+s <- data.frame(unlist(s))
+colnames(s) <- c("Est", "SE", "t", "p")
+s 
+
+s$logregmodCI <- confint(logregmod, level = 1 - alpha)
+lowerCI <- s$Est - qt(1 - alpha/2, df = 24) * s$SE
+upperCI <- s$Est + qt(1 - alpha/2, df = 24) * s$SE
+s$CI <- cbind(lowerCI, upperCI)
+dimnames(s$CI)[[1]] <- c("(Intercept)", "brain_size")
+dimnames(s$CI)[[2]] <- c("(5 %)", "(95 %)")
+s[ ,5:6]
 ```
 
 ###Using your model, add lines for the 90% confidence and prediction interval bands on the plot, and add a legend to differentiate between the lines.
@@ -123,6 +155,28 @@ df <- cbind(df, pi)
 g <- g + geom_line(data = df, aes(x = brain_size, y = lwr), colour = "red")
 g <- g + geom_line(data = df, aes(x = brain_size, y = upr), colour = "red")
 g
+
+#log
+
+g_hat <- predict(logregmod, newdata = data.frame(logbrain = logbrain))
+df2 <- data.frame(cbind(logbrain, loglong, g_hat))
+ci2 <- predict(logregmod, newdata = data.frame(logbrain = logbrain), interval = "confidence", 
+               level = 0.90)
+df2 <- cbind(df2, ci2)
+names(df2) <- c("logbrain", "loglong", "ghat", "CIfit", "CIlwr", "CIupr")
+g2 <- ggplot(data = df2, aes(x = logbrain, y = loglong))
+g2 <- g2 + geom_point(alpha = 0.5)
+g2 <- g2 + geom_line(aes(x = logbrain, y = CIfit), colour = "black")
+g2 <- g2 + geom_line(aes(x = logbrain, y = CIlwr), colour = "blue")
+g2 <- g2 + geom_line(aes(x = logbrain, y = CIupr), colour = "blue")
+g2
+pi2 <- predict(logregmod, newdata = data.frame(logbrain = logbrain), interval = "prediction", 
+               level = 0.90)
+df2 <- cbind(df2, pi2)
+g2 <- g2 + geom_line(data = df2, aes(x = logbrain, y = lwr), colour = "red")
+g2 <- g2 + geom_line(data = df2, aes(x = logbrain, y = upr), colour = "red")
+g2
+
 ```
 
 
@@ -130,5 +184,11 @@ g
 pi <- predict(regmod, newdata = data.frame(Brain_Size_Species_Mean = 800), interval = "prediction", 
               level = 0.90)
 pi
+
+#log
+
+pi2 <- predict(logregmod, newdata = data.frame(logbrain = log(800)), interval = "prediction", 
+              level = 0.90)
+pi2
 ```
 

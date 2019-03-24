@@ -9,7 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-
+#Problem 1
 ```{r}
 x <- c(1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 
         1, 0)
@@ -43,7 +43,6 @@ Z.prop.test <- function(x, p0, y = NULL, alternative = "two.sided", conf.level =
       p <- 1 - pnorm(z, lower.tail = FALSE)} 
   if (alternative <="less"){
       p <- pnorm(z, lower.tail = TRUE)} 
-  }
   m1<-mean(x)
   m2<-mean(y)
   se <- sqrt(sd(x) *sd(y)/length(x)+sd(y)*sd(y)/length(y))
@@ -52,5 +51,84 @@ Z.prop.test <- function(x, p0, y = NULL, alternative = "two.sided", conf.level =
   print(list("z statistic" = z, "confidence interval" = ci, "p value" = p))
   }
 
+
+  }
+
 Z.prop.test(x, p0, y)
 ```
+
+#Problem 2
+###Fit the regression model and, using {ggplot2}, produce a scatterplot with the fitted line superimposed upon the data. Append the the fitted model equation to your plot
+```{r}
+library(tidyverse)
+library(curl)
+f <- curl("https://raw.githubusercontent.com/difiore/ADA-2019/master/KamilarAndCooperData.csv")
+d <- read.csv(f, header = TRUE, stringsAsFactors = FALSE)
+d <- na.omit(d)
+
+longevity <-(d$MaxLongevity_m)
+brain_size<-(d$Brain_Size_Species_Mean)
+
+regmod <- lm(MaxLongevity_m ~ Brain_Size_Species_Mean, data = d)
+regmod
+head(regmod$model)
+
+library(ggplot2)
+g <- ggplot(data = d, aes(x = brain_size, y = longevity))
+g <- g + geom_point()
+g <- g + geom_smooth(method = "lm", formula = y ~ x)
+g
+
+```
+##Beta1
+```{r}
+beta1 <- cov(brain_size, longevity)/var(brain_size)
+beta1
+```
+##CI
+```{r}
+summary(regmod)
+t <- coef(summary(regmod))
+t <- data.frame(unlist(t))
+colnames(t) <- c("Est", "SE", "t", "p")
+t 
+
+alpha <- 0.1
+t$redmodCI <- confint(regmod, level = 1 - alpha)
+lowerCI <- t$Est - qt(1 - alpha/2, df = 24) * t$SE
+upperCI <- t$Est + qt(1 - alpha/2, df = 24) * t$SE
+t$CI <- cbind(lowerCI, upperCI)
+dimnames(t$CI)[[1]] <- c("(Intercept)", "brain_size")
+dimnames(t$CI)[[2]] <- c("(5 %)", "(95 %)")
+t[ ,5:6]
+```
+
+###Using your model, add lines for the 90% confidence and prediction interval bands on the plot, and add a legend to differentiate between the lines.
+```{r}
+h_hat <- predict(regmod, newdata = data.frame(Brain_Size_Species_Mean = d$Brain_Size_Species_Mean))
+df <- data.frame(cbind(d$Brain_Size_Species_Mean, d$MaxLongevity_m, h_hat))
+ci <- predict(regmod, newdata = data.frame(Brain_Size_Species_Mean = d$Brain_Size_Species_Mean), interval = "confidence", 
+              level = 0.90)
+df <- cbind(df, ci)
+names(df) <- c("brain_size", "longevity", "yhat", "CIfit", "CIlwr", "CIupr")
+g <- ggplot(data = df, aes(x = brain_size, y = longevity))
+g <- g + geom_point(alpha = 0.5)
+g <- g + geom_line(aes(x = brain_size, y = CIfit), colour = "black")
+g <- g + geom_line(aes(x = brain_size, y = CIlwr), colour = "blue")
+g <- g + geom_line(aes(x = brain_size, y = CIupr), colour = "blue")
+g
+pi <- predict(regmod, newdata = data.frame(Brain_Size_Species_Mean = d$Brain_Size_Species_Mean), interval = "prediction", 
+              level = 0.90)
+df <- cbind(df, pi)
+g <- g + geom_line(data = df, aes(x = brain_size, y = lwr), colour = "red")
+g <- g + geom_line(data = df, aes(x = brain_size, y = upr), colour = "red")
+g
+```
+
+
+```{r}
+pi <- predict(regmod, newdata = data.frame(Brain_Size_Species_Mean = 800), interval = "prediction", 
+              level = 0.90)
+pi
+```
+

@@ -97,10 +97,12 @@ g2
 ```{r}
 beta1 <- cov(brain_size, longevity)/var(brain_size)
 beta1
+#There is a positive correlation between the variables such that beta1 does not equal 0.
 
 #log
-beta1 <- cov(logbrain, loglong)/var(logbrain)
-beta1
+beta2 <- cov(logbrain, loglong)/var(logbrain)
+beta2
+#There is a positive correlation between the variables such that beta1 does not equal 0.
 ```
 ##CI
 ```{r}
@@ -148,14 +150,15 @@ g <- g + geom_point(alpha = 0.5)
 g <- g + geom_line(aes(x = brain_size, y = CIfit), colour = "black")
 g <- g + geom_line(aes(x = brain_size, y = CIlwr), colour = "blue")
 g <- g + geom_line(aes(x = brain_size, y = CIupr), colour = "blue")
-g
+g 
 pi <- predict(regmod, newdata = data.frame(Brain_Size_Species_Mean = d$Brain_Size_Species_Mean), interval = "prediction", 
               level = 0.90)
 df <- cbind(df, pi)
 g <- g + geom_line(data = df, aes(x = brain_size, y = lwr), colour = "red")
 g <- g + geom_line(data = df, aes(x = brain_size, y = upr), colour = "red")
-g
-
+g + geom_text("Blue= CI, Red = Prediction interval")
+g +
+  annotate("text", x=100, y=800, label= "Blue=CI, Red=Prediction interval") 
 #log
 
 g_hat <- predict(logregmod, newdata = data.frame(logbrain = logbrain))
@@ -175,7 +178,8 @@ pi2 <- predict(logregmod, newdata = data.frame(logbrain = logbrain), interval = 
 df2 <- cbind(df2, pi2)
 g2 <- g2 + geom_line(data = df2, aes(x = logbrain, y = lwr), colour = "red")
 g2 <- g2 + geom_line(data = df2, aes(x = logbrain, y = upr), colour = "red")
-g2
+g2 +
+  annotate("text", x=3, y=6.5, label= "Blue=CI, Red=Prediction interval") 
 
 ```
 
@@ -184,11 +188,14 @@ g2
 pi <- predict(regmod, newdata = data.frame(Brain_Size_Species_Mean = 800), interval = "prediction", 
               level = 0.90)
 pi
+#I dont' trust this prediction because there are not alot of data points nearby.
 
 #log
 
 pi2 <- predict(logregmod, newdata = data.frame(logbrain = log(800)), interval = "prediction", 
               level = 0.90)
 pi2
+#I would trust this prediction more than the one above because there are more data points closer.
 ```
 
+I think the linea model of the log of the data is better because the dta points are more evenly spread out making the model more accurate. 

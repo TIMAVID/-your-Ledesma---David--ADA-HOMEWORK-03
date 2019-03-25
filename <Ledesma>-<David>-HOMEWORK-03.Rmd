@@ -73,36 +73,52 @@ regmod <- lm(MaxLongevity_m ~ Brain_Size_Species_Mean, data = d)
 regmod
 head(regmod$model)
 
+lm_eqn <- function(df){
+  regmod <- lm(MaxLongevity_m ~ Brain_Size_Species_Mean, d);
+  eq <- substitute(italic(y) == a + b %.% italic(x),
+                   list(a = format(coef(regmod)[1], digits = 3),
+                        b = format(coef(regmod)[2], digits = 3)))
+  as.character(as.expression(eq));
+}
+
 library(ggplot2)
 g <- ggplot(data = d, aes(x = brain_size, y = longevity))
 g <- g + geom_point()
 g <- g + geom_smooth(method = "lm", formula = y ~ x)
-g
+g + geom_text(x = 150, y = 800, label = lm_eqn(df), parse = TRUE)
 
-#log
+##log##
 loglong<- log(longevity)
 logbrain<- log(brain_size)
 logregmod<-lm(loglong ~ logbrain)
 logregmod
 head(logregmod$model)
 
+lm_eqn2 <- function(df){
+  logregmod <- lm(loglong ~ logbrain);
+  eq <- substitute(italic(y) == a + b %.% italic(x),
+                   list(a = format(coef(logregmod)[1], digits = 3),
+                        b = format(coef(logregmod)[2], digits = 3)))
+  as.character(as.expression(eq));
+}
+
 library(ggplot2)
 g2 <- ggplot(data = d, aes(x = log(brain_size), y = log(longevity)))
 g2 <- g2 + geom_point()
 g2 <- g2 + geom_smooth(method = "lm", formula = y ~ x)
-g2
+g2 + geom_text(x = 3, y = 6.4, label = lm_eqn2(df), parse = TRUE)
 ```
 
 ##Beta1
 ```{r}
 beta1 <- cov(brain_size, longevity)/var(brain_size)
 beta1
-#There is a positive correlation between the variables such that beta1 does not equal 0.
+#There is a positive correlation between the variables such that beta1 does not equal 0 and we can reject the NULL hypothesis.
 
-#log
+##log##
 beta2 <- cov(logbrain, loglong)/var(logbrain)
 beta2
-#There is a positive correlation between the variables such that beta1 does not equal 0.
+#There is a positive correlation between the variables such that beta1 does not equal 0 and we can reject the NULL hypothesis.
 ```
 ##CI
 ```{r}
@@ -121,7 +137,7 @@ dimnames(t$CI)[[1]] <- c("(Intercept)", "brain_size")
 dimnames(t$CI)[[2]] <- c("(5 %)", "(95 %)")
 t[ ,5:6]
 
-#log
+##log##
 summary(logregmod)
 s <- coef(summary(logregmod))
 s <- data.frame(unlist(s))
@@ -158,7 +174,8 @@ g <- g + geom_line(data = df, aes(x = brain_size, y = lwr), colour = "red")
 g <- g + geom_line(data = df, aes(x = brain_size, y = upr), colour = "red")
 g +
   annotate("text", x=100, y=800, label= "Blue=CI, Red=Prediction interval") 
-#log
+
+##log##
 
 g_hat <- predict(logregmod, newdata = data.frame(logbrain = logbrain))
 df2 <- data.frame(cbind(logbrain, loglong, g_hat))
@@ -189,12 +206,12 @@ pi <- predict(regmod, newdata = data.frame(Brain_Size_Species_Mean = 800), inter
 pi
 #I dont' trust this prediction because there are not alot of data points nearby.
 
-#log
+##log##
 
 pi2 <- predict(logregmod, newdata = data.frame(logbrain = log(800)), interval = "prediction", 
               level = 0.90)
 pi2
-#I would trust this prediction more than the one above because there are more data points closer.
+#I would trust this prediction more than the one above because there are more data points closer to a brain weight=log(800).
 ```
 
-I think the linea model of the log of the data is better because the dta points are more evenly spread out making the model more accurate. 
+##I think the linear model of the log of the data is better because the data points are more evenly spread out making the model more accurate. 
